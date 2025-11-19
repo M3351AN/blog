@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="最近有点工作要做，所以往往是晚上上班，白天睡觉"><link rel="stylesheet" type="text/css" href="/css/normalize.css"><link rel="stylesheet" type="text/css" href="/css/highlight.css"><link rel="stylesheet" type="text/css" href="/css/noise.css"><title>老思路，新方法。用简单的思路更优雅的过SPT启动器正版验证 | Blog von 渟雲</title><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><meta name="generator" content="Hexo 8.1.1"></head><body><article class="wrapper"><div class="post-main"><div class="nav"><nav class="container"><a class="sidebar-nav-item active" href="/">Home</a></nav><div class="container post-meta"><div class="post-time">2025-11-20</div></div></div><div class="container post-header"><h1>老思路，新方法。用简单的思路更优雅的过SPT启动器正版验证</h1></div><div class="container post-content"><p>最近有点工作要做，所以往往是晚上上班，白天睡觉</p>
+<p>巧不巧，最近尼基塔给塔科夫上架到Steam了，SPT原有的正版验证也自然是要跟进，然后两天之内发了两个版，把SPT原有的一万年没改过的正版验证函数改了几次</p>
+<p>于是，我们的SPT Fuyu 2.0阵亡了两次。</p>
+<p>要更新也很简单，找到新的特征码，然后加上就好了。但这样也有弊端，最重要的一点就是，SPT发版的时候我刚进入梦乡，醒来已经是十几小时之后了，那怎么及时更新嘛。</p>
+<p>更何况，每次更新就把新的特征码加进列表，为了兼容旧版本又不得不留着旧版本，但凡他多更新几次，这特征码列表得叠成杀人书。</p>
+<p>而且说实话，每次更新又要重新修补，这又是多一步操作了。</p>
+<p>但一转头，想起来，原先最古老的思路（创建注册表项和文件），应该是能在更新后存活的。但我自己说过，这会留文件和注册表项，极其的不优雅，我总不能委曲求全然后打自己的脸吧。</p>
+<p>废话说多了，直接进入正题。</p>
+<p>既然SPT检查文件和注册表都是通过WindowsAPI，那我们直接挂钩，在需要的时候伪造返回值即可。</p>
+<p>我们用到的工具有：Procmon。</p>
+<p>怎么操作，怎么设置过滤项，百度说得很清楚，此处略过。</p>
+<p>直接一盯，好了，知道用的是RegOpenKey检查是不是存在了</p>
+<p><img src="/../%E8%80%81%E6%80%9D%E8%B7%AF%EF%BC%8C%E6%96%B0%E6%96%B9%E6%B3%95%E3%80%82%E7%94%A8%E7%AE%80%E5%8D%95%E7%9A%84%E6%80%9D%E8%B7%AF%E6%9B%B4%E4%BC%98%E9%9B%85%E7%9A%84%E8%BF%87SPT%E5%90%AF%E5%8A%A8%E5%99%A8%E6%AD%A3%E7%89%88%E9%AA%8C%E8%AF%81/2025-11-20-00-31-20-image.png"></p>
+<p>顺便往旁边一盯，是用RegQueryKey获取注册表项的值，明白了。</p>
+<p>盯文件检查也是同理，为了截图再走一圈好麻烦，一样略过。</p>
+<p>那我们怎么Hook，我们用MinHook，怎么用文档也写得很明白了，我们主要讲思路。</p>
+<p><img src="/../%E8%80%81%E6%80%9D%E8%B7%AF%EF%BC%8C%E6%96%B0%E6%96%B9%E6%B3%95%E3%80%82%E7%94%A8%E7%AE%80%E5%8D%95%E7%9A%84%E6%80%9D%E8%B7%AF%E6%9B%B4%E4%BC%98%E9%9B%85%E7%9A%84%E8%BF%87SPT%E5%90%AF%E5%8A%A8%E5%99%A8%E6%AD%A3%E7%89%88%E9%AA%8C%E8%AF%81/2025-11-20-00-35-31-image.png"></p>
+<p>直接检查是不是我们要“伪装”的注册表项，至于是哪个，能看到这一步的自然不用我再赘述</p>
+<p><img src="/../%E8%80%81%E6%80%9D%E8%B7%AF%EF%BC%8C%E6%96%B0%E6%96%B9%E6%B3%95%E3%80%82%E7%94%A8%E7%AE%80%E5%8D%95%E7%9A%84%E6%80%9D%E8%B7%AF%E6%9B%B4%E4%BC%98%E9%9B%85%E7%9A%84%E8%BF%87SPT%E5%90%AF%E5%8A%A8%E5%99%A8%E6%AD%A3%E7%89%88%E9%AA%8C%E8%AF%81/2025-11-20-00-36-36-image.png"></p>
+<p>反正检查到只要是这个注册表项，就返回成功，告诉你确实有这个注册表项，完毕。保险起见，我给包装过的和底层的都钩住了。</p>
+<p><img src="/../%E8%80%81%E6%80%9D%E8%B7%AF%EF%BC%8C%E6%96%B0%E6%96%B9%E6%B3%95%E3%80%82%E7%94%A8%E7%AE%80%E5%8D%95%E7%9A%84%E6%80%9D%E8%B7%AF%E6%9B%B4%E4%BC%98%E9%9B%85%E7%9A%84%E8%BF%87SPT%E5%90%AF%E5%8A%A8%E5%99%A8%E6%AD%A3%E7%89%88%E9%AA%8C%E8%AF%81/2025-11-20-00-37-46-image.png"></p>
+<p>至于注册表键值，直接返回我们的虚拟目录，完毕。它根本不需要存在于文件系统中，因为接下来我们会把文件系统访问的API也挂钩</p>
+<p><img src="/../%E8%80%81%E6%80%9D%E8%B7%AF%EF%BC%8C%E6%96%B0%E6%96%B9%E6%B3%95%E3%80%82%E7%94%A8%E7%AE%80%E5%8D%95%E7%9A%84%E6%80%9D%E8%B7%AF%E6%9B%B4%E4%BC%98%E9%9B%85%E7%9A%84%E8%BF%87SPT%E5%90%AF%E5%8A%A8%E5%99%A8%E6%AD%A3%E7%89%88%E9%AA%8C%E8%AF%81/2025-11-20-00-38-49-image.png"></p>
+<p>和注册表同理，你问文件，有的！</p>
+<p><img src="/../%E8%80%81%E6%80%9D%E8%B7%AF%EF%BC%8C%E6%96%B0%E6%96%B9%E6%B3%95%E3%80%82%E7%94%A8%E7%AE%80%E5%8D%95%E7%9A%84%E6%80%9D%E8%B7%AF%E6%9B%B4%E4%BC%98%E9%9B%85%E7%9A%84%E8%BF%87SPT%E5%90%AF%E5%8A%A8%E5%99%A8%E6%AD%A3%E7%89%88%E9%AA%8C%E8%AF%81/2025-11-20-00-39-37-image.png"></p>
+<p>你问文件是啥，我想让它是啥就告诉你啥。</p>
+<p>然后问题就解决了。</p>
+<p>那么怎么用呢？总不能每次都手动注入dll吧</p>
+<p>那就Dll Proxy，请使用Dll Proxy Generator</p>
+<p>打开IDA，在导入表里找个软柿子，就user32.dll挺好的</p>
+<p><img src="/../%E8%80%81%E6%80%9D%E8%B7%AF%EF%BC%8C%E6%96%B0%E6%96%B9%E6%B3%95%E3%80%82%E7%94%A8%E7%AE%80%E5%8D%95%E7%9A%84%E6%80%9D%E8%B7%AF%E6%9B%B4%E4%BC%98%E9%9B%85%E7%9A%84%E8%BF%87SPT%E5%90%AF%E5%8A%A8%E5%99%A8%E6%AD%A3%E7%89%88%E9%AA%8C%E8%AF%81/2025-11-20-00-42-08-image.png"></p>
+<p>然后</p>
+<p><img src="/../%E8%80%81%E6%80%9D%E8%B7%AF%EF%BC%8C%E6%96%B0%E6%96%B9%E6%B3%95%E3%80%82%E7%94%A8%E7%AE%80%E5%8D%95%E7%9A%84%E6%80%9D%E8%B7%AF%E6%9B%B4%E4%BC%98%E9%9B%85%E7%9A%84%E8%BF%87SPT%E5%90%AF%E5%8A%A8%E5%99%A8%E6%AD%A3%E7%89%88%E9%AA%8C%E8%AF%81/2025-11-20-00-41-34-image.png"></p>
+<p>以下略</p>
+<p>然后拖到启动器同目录，完事。</p>
+<p>以上便是SPT Fuyu3.0的思路</p>
+</div></div><div class="post-main post-comment"></div></article><link rel="stylesheet" type="text/css" href="/css/third-party/font-awesome/4.5.0/font-awesome.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcdn.net/ajax/libs/lato-font/3.0.0/css/lato-font.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.css"><script src="/js/third-party/jquery/2.0.3/jquery.min.js"></script><script src="/js/third-party/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script>$(document).ready(function() {
+  $(".fancybox").fancybox();
+});
+</script></body></html>
